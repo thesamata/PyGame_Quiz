@@ -1,571 +1,346 @@
-from tkinter import *
+import json
+import os
 import random
 import pygame
-from PIL import ImageTk, Image
+from tkinter import *
 from tkinter import messagebox
+from PIL import ImageTk, Image
 
-pygame.mixer.init()
-sayac = 0
-oyun_sayac = 0
-konusma_sayac= 0
-dogru_sayac = 0
-musicdongu = 10
-health = 2
-oyun_sayisi = 3
-frameCnt = 23
-
-#Defler
-
-def story ():
-        #İlk Veriler
-        global story_button
-        global story
-        giris_button.destroy()   
-        isim_girin.destroy()
-        sorgu_button1.destroy() 
-        isim_giris.place(x=20000)
-        Launcher_Label.config(text = "Kapatmayınız burası Launcher" )
-        #Story Launch
-        story = Toplevel(Launcher)
-        story.title("Hikaye")
-        story.resizable(width=False, height=False)
-        story.geometry("800x400")
-
-        story_background = Label(story,  
-                fg="white", 
-                image=story_resim1,
-                bg="black",  
-                font="italic").pack()
-        #Button
-        story_button = Button(story)
-        story_button.config(text="Oku", bg="black", fg="white", width=12, height=0,command = devam)
-        story_button.place(x=600, y=300)
-def devam():
-        #Counter
-        global sayac
-        sayac +=1
-        if sayac == 8:
-               sayac=0      
-        #Veri
-        hikaye_dosya = open("Metin\\Hikaye", "r+", encoding="utf-8")
-        hikaye = hikaye_dosya.readlines()    
-        #Sorgu     
-        satir=[]  
-        for i in range(-1,len(hikaye)-1):
-            x=hikaye[i]
-            z=len(x)
-            a=x[:z-1]
-            satir.append(a)
-        satir.append(hikaye[i+1])
-        hikaye_yazisi=(satir[sayac])    
-        hikaye_dosya.close()
-        #Yazılan hikaye
-        story_label = Label(story)
-        story_label.config(text=hikaye_yazisi,
-                fg="white", 
-                bg="black", 
-                width=85, height=15, 
-                font=("minecraft", 10)) 
-        story_label.place(relx=0.5, rely=0.2, anchor=CENTER)   
-        if sayac == 7:
-                story_button.config(text="Başla", bg="black", fg="white", width=12, height=0,command=konusma)
-           
-def konusma():
-        #İlk veriler
-        story.destroy()
-        global frameCnt
-        global konumsa_label
-        global boss_konusma
-        global bosskonusma_button
-        #Boss konuşma Launch
-        boss_konusma = Toplevel(Launcher)
-        boss_konusma.title("Konuşma")
-        boss_konusma.resizable(width=False, height=False)
-        boss_konusma.geometry("800x400")
-        #Backgorund
-        def update(ind):
-                frame = bossgif_image[ind]
-                ind += 1
-                if ind == frameCnt:
-                      ind = 0
-                konusma_gif.configure(image=frame)
-                boss_konusma.after(100, update, ind)
-        konusma_gif = Label(boss_konusma)
-        konusma_gif.pack()
-        boss_konusma.after(0, update, 0)
-        #Label
-        konumsa_label = Label(boss_konusma,
-                        text="Sen kimsin",
-                        fg="white", 
-                        bg="black", 
-                        width=65, height=5, 
-                        font=("minecraft", 10))      
-        konumsa_label.place(relx=0.5, rely=0.8, anchor=CENTER)   
-        #Button
-        bosskonusma_button = Button(boss_konusma)
-        bosskonusma_button.config(text="Konuş", bg="black", fg="white", width=12, height=0,command = konumsadevam)
-        bosskonusma_button.place(relx=0.9, rely=0.9, anchor=CENTER)   
+class GameApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Launcher")
+        self.root.geometry("300x200")
+        self.root.resizable(width=False, height=False)
         
-def konumsadevam():
-        #Konuşma
-        global konusma_sayac
-        konusma_sayac += 1
-        if konusma_sayac == 1:
-                konumsa_label.config(text="Seni tanımıyorum.")
-                bosskonusma_button.config(text="Devam")
-        if konusma_sayac == 2:
-                konumsa_label.config(text="Demek Adın "+ isim_giris.get())
-        if konusma_sayac == 3:
-                konumsa_label.config(text="Sen bana uygun bir rakip değilsin.")  
-        if konusma_sayac == 4:
-                konumsa_label.config(text="Şimdi Yıkıl Karşımdan.")
-                bosskonusma_button.config(text="Çık", bg="black", fg="white", width=12, height=0,command = ilk_kat)  
-        #Kapılar
-def ilk_kat ():
-        #İlk Veriler
-        global birinci_kat
-        boss_konusma.destroy()
-        dogru_secim.destroy()
-        yanlis_secim.destroy()
-        birinci_kat=Toplevel(Launcher)
-        #Kapı Launch
-        birinci_kat.title("Birinci Kat")
-        birinci_kat.geometry("800x600")
-        birinci_kat.resizable(width=False, height=False)
-        #Backgorund
-        katbirbackground = Label(birinci_kat,  
-                fg="white", 
-                image=katbir_resim1,
-                bg="black",  
-                font="italic").pack()
-        #Label
-        birincikat_Label = Label(birinci_kat ,  
-                text="Hoş geldin savaşçı",
-                font=("Minecraft"),
-                )
-        birincikat_Label.place(relx=0.5, rely=0.1, anchor=CENTER)
-        #Button
-
-        birincikat_buton1 = Button(birinci_kat)
-        birincikat_buton1.config(text="kapı1", bg="black", fg="white", image=katbir_kapiresim1, command=sorular)
-        birincikat_buton1.place(relx=0.2, rely=0.5, anchor=CENTER)
-
-        birincikat_buton2 = Button(birinci_kat)
-        birincikat_buton2.config(text="kapı2", bg="black", fg="white", image=katbir_kapiresim1, command=sorular)
-        birincikat_buton2.place(relx=0.8, rely=0.5, anchor=CENTER)
-
-
-def ikinci_kat():
-        global ikinci_kat
-        sorukapisi.destroy()
-        ikinci_kat = Toplevel(Launcher)
-        # Kapı Launch
-        ikinci_kat.title("İkinci Kat")
-        ikinci_kat.geometry("800x600")
-        ikinci_kat.resizable(width=False, height=False)
-        katbirbackground = Label(ikinci_kat,
-                                 fg="white",
-                                 image=katiki_resim1,
-                                 bg="black",
-                                 font="italic").pack()
-        # Label
-        ikinci_kat_Label = Label(ikinci_kat,
-                                 text="Devam Edecektir...",
-                                 font=("Minecraft"),
-                                 )
-        ikinci_kat_Label.place(relx=0.5, rely=0.1, anchor=CENTER)
-
-def sorular():
-        #İlk Veriler
-        global oyun_sayac
-        oyun_sayac += 1
-        global sorukapisi
-        birinci_kat.destroy()
-        #Soru kapı Launch
-        sorukapisi = Toplevel(Launcher)
-        sorukapisi.title("Soru")
-        sorukapisi.geometry("800x600")
-        sorukapisi.resizable(width=False, height=False)
-        #Background
-        katbirbackground = Label(sorukapisi,  
-                    fg="white", 
-                    image=katbir_resim1,    
-                    bg="black",  
-                    font="italic").pack()
-        s = open("Metin\\Sorular", "r" , encoding="utf-8" )
-        m = s.readlines()
-        l = []
-        for i in range(0, len(m) - 1):
-            x = m[i]
-            z = len(x)
-            a = x[:z - 1]
-            l.append(a)
-        l.append(m[i + 1])
-        o = random.choice(l)
-        s.close()
-        #Soru sorgusu
-        if oyun_sayac <= oyun_sayisi:
-               
-                if (o == l[0]):
-                       
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Memory Card", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
-
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Hard disk", bg="black", fg="white", width=12, height=0,command=yanlis)
-                        buton2.place(x=300, y=350)
-
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Rom", bg="black", fg="white", width=12, height=0,command=yanlis)
-                        buton3.place(x=400, y=350)
-
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Ram", bg="black", fg="white", width=12, height=0, command=dogru)
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[1]):
-     
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Klavye", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
-
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Ekran", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton2.place(x=300, y=350)
-
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Mouse", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton3.place(x=400, y=350)
-
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Daktilo", bg="black", fg="white", width=12, height=0, command=dogru )
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[2]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Flash Bellek", bg="black", fg="white", width=12, height=0, command=dogru )
-                        buton1.place(x=200, y=350)
+        # Oyun İçi Değişkenler
+        self.oyun_sayac = 0
+        self.dogru_sayac = 0
+        self.health = 2
+        self.oyun_sayisi = 3
+        self.musicdongu = 10
+        self.oyuncu_ismi = ""
+        self.frameCnt = 23
+        self.hikaye_sayac = 0
+        self.konusma_sayac = 0
+        self.secilen_soru = None
+        self.mevcut_sorular = []
         
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) ROM Bellek", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton2.place(x=300, y=350)
+        # Pygame Ses Sistemi
+        pygame.mixer.init()
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
         
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Ekran Kartı", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton3.place(x=400, y=350)
+        # Resimleri Yükleme
+        self.load_images()
+        # Soruları Yükleme
+        self.load_questions()
         
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Ekran", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[3]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) İşlemci", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton1.place(x=200, y=350)
+        # Başlangıç Arayüzü
+        self.setup_launcher()
         
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Yüklü programlar", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton2.place(x=300, y=350)
+    def get_path(self, *paths):
+        return os.path.join(self.base_dir, *paths)
         
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Mouse", bg="black", fg="white", width=12, height=0,command=dogru )
-                        buton3.place(x=400, y=350)
+    def load_images(self):
+        try:
+            self.launcher_image1 = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'launcher.jpg')))
+            self.story_resim1 = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'doga.jpg')))
+            self.katbir_resim1 = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'magara.jpg')))
+            self.katbir_kapiresim1 = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'kapi1.png')))
+            self.dogru_bilgiresim = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'dogrubilgi.jpg')))
+            self.yanlis_bilgiresim = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'yanlisbilgi.png')))
+            self.katiki_resim1 = ImageTk.PhotoImage(Image.open(self.get_path('texture', 'agac.png')))
+            
+            # Animasyon için frame'leri yükleme
+            boss_gif_path = self.get_path('texture', 'boss.gif')
+            self.bossgif_image = [PhotoImage(file=boss_gif_path, format=f'gif -index {i}') for i in range(self.frameCnt)]
+        except Exception as e:
+            print("Görseller yüklenirken hata oluştu. Varsayılan görseller kullanılmayabilir.", e)
+            
+    def load_questions(self):
+        # Eski sistemde sorular ve cevapları ayrı ayrı koda gömülmüştü. 
+        # Bunu veri yapısı haline getirdik.
+        self.soru_havuzu = [
+            {
+                "soru": "Bilgiler geçici olarak hangi bellek üzerinde tutulur?",
+                "siklar": ["A) Memory Card", "B) Hard disk", "C) Rom", "D) Ram"],
+                "cevap": 3 # D şıkkı (index 3)
+            },
+            {
+                "soru": "Hangisi bilgisayar birimi değildir?",
+                "siklar": ["A) Klavye", "B) Ekran", "C) Mouse", "D) Daktilo"],
+                "cevap": 3
+            },
+            {
+                "soru": "Hangisi hem girdi hem çıktı birimidir?",
+                "siklar": ["A) Flash Bellek", "B) ROM Bellek", "C) Ekran Kartı", "D) Ekran"],
+                "cevap": 0
+            },
+            {
+                "soru": "Hangisi bilgisayarın hızını etkilemez?",
+                "siklar": ["A) İşlemci", "B) Yüklü programlar", "C) Mouse", "D) Ram"],
+                "cevap": 2
+            },
+            {
+                "soru": "Hangisi bir çıktı ünitesidir?",
+                "siklar": ["A) Klavye", "B) Mouse", "C) Barkod Okuyucu", "D) Hoparlör"],
+                "cevap": 3
+            },
+            {
+                "soru": "Bilgisayar bellek birimlerinden 1 byte, kaç bit’ten oluşur?",
+                "siklar": ["A) 3", "B) 6", "C) 8", "D) 10"],
+                "cevap": 2
+            },
+            {
+                "soru": "Bilgilerin kalıcı olarak depolandığı yere ne ad verilir?",
+                "siklar": ["A) Ram", "B) Modem", "C) HDD", "D) Rom"],
+                "cevap": 2
+            },
+            {
+                "soru": "Bilgisayarı insanlardan ayıran en önemli özellik nedir?",
+                "siklar": ["A) İşlem hacmi", "B) Yorum yeteneği", "C) Düşünme gücü", "D) Mantık yürütme"],
+                "cevap": 0
+            },
+            {
+                "soru": "Klavyedeki ($ , # , vb.) simgeler hangi yardımcı tuşla eklenebilir?",
+                "siklar": ["A) Alt Gr", "B) Ctrl+Alt", "C) Ctrl", "D) Shift"],
+                "cevap": 1
+            },
+            {
+                "soru": "Ekrandaki en küçük noktalara ne ad verilir?",
+                "siklar": ["A) Character", "B) Column", "C) Pixel", "D) Line"],
+                "cevap": 2
+            }
+        ]
         
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Ram", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton4.place(x=500, y=350)
-                elif (o == l[4]): 
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Klavye", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
-        
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Mouse", bg="black", fg="white", width=12, height=0,command=yanlis)
-                        buton2.place(x=300, y=350)
-        
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Barkod Okuyucu", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton3.place(x=400, y=350)
-        
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Hoparlör", bg="black", fg="white", width=12, height=0,command=dogru )
-                        buton4.place(x=500, y=350)
-                elif (o == l[5]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) 3", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
+    def setup_launcher(self):
+        # Arka plan resmi
+        if hasattr(self, 'launcher_image1'):
+            self.bg_label = Label(self.root, image=self.launcher_image1, justify=CENTER)
+            self.bg_label.pack()
+            
+        self.launcher_label = Label(self.root, text="Hoş geldin savaşçı", font=("Arial", 12, "bold"))
+        self.launcher_label.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) 6", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton2.place(x=300, y=350)
+        self.isim_girin_label = Label(self.root, text="İsim Giriniz", fg="white", bg="black", font=("Arial", 10))
+        self.isim_girin_label.place(relx=0.5, rely=0.3, anchor=CENTER)
 
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) 8", bg="black", fg="white", width=12, height=0, command=dogru)
-                        buton3.place(x=400, y=350)
+        self.isim_giris = Entry(self.root)
+        self.isim_giris.place(relx=0.5, rely=0.5, anchor=CENTER)
 
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) 10", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton4.place(x=500, y=350)
+        self.giris_button = Button(self.root, text="Başla", bg="black", fg="white", command=self.basla_sorgu)
+        self.giris_button.place(relx=0.5, rely=0.8, anchor=CENTER)
 
-                elif (o == l[6]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Ram", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
+        self.kapi_button = Button(self.root, text="Kapı Bilgisi", bg="black", fg="white", command=self.kapilar_bilgi)
+        self.kapi_button.place(relx=0.2, rely=0.8, anchor=CENTER)
 
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Modem", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton2.place(x=300, y=350)
-
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) HDD", bg="black", fg="white", width=12, height=0, command=dogru )
-                        buton3.place(x=400, y=350)
-
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Rom", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[7]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) İşlem hacmi", bg="black", fg="white", width=12, height=0, command=dogru)
-                        buton1.place(x=200, y=350)
-        
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Yorum yeteneği", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton2.place(x=300, y=350)
-        
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Düşünme gücü", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton3.place(x=400, y=350)
-        
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Mantık yürütme", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[8]):
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Alt Gr", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)     
-
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Ctrl+Alt ", bg="black", fg="white", width=12, height=0, command=dogru )
-                        buton2.place(x=300, y=350)   
-
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Ctrl", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton3.place(x=400, y=350)
-
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Shift", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton4.place(x=500, y=350)
-
-                elif (o == l[9]): 
-                        
-                        Label(sorukapisi, text=o, font="minecraft").place(relx=0.5, rely=0.1, anchor=CENTER)
-                        buton1 = Button(sorukapisi)
-                        buton1.config(text="A) Character", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton1.place(x=200, y=350)
-
-                        buton2 = Button(sorukapisi)
-                        buton2.config(text="B) Column", bg="black", fg="white", width=12, height=0,command=yanlis )
-                        buton2.place(x=300, y=350)
-
-                        buton3 = Button(sorukapisi)
-                        buton3.config(text="C) Pixel", bg="black", fg="white", width=12, height=0, command=dogru)
-                        buton3.place(x=400, y=350)
-
-                        buton4 = Button(sorukapisi)
-                        buton4.config(text="D) Line", bg="black", fg="white", width=12, height=0, command=yanlis)
-                        buton4.place(x=500, y=350)
+    def basla_sorgu(self):
+        isim = self.isim_giris.get().strip()
+        if not isim:
+            messagebox.showinfo("Boş", "Lütfen bir isim girin!")
         else:
-                Label(sorukapisi, text="Bitti Sanıyorsan Yanılıyorsun"+ ("\n") + isim_giris.get(),
-                      font="minecraft").place(relx=0.5, rely=0.1,anchor=CENTER)
+            self.oyuncu_ismi = isim
+            self.root.withdraw() # Launcher'ı gizle
+            self.baslat_hikaye()
+            
+    def kapilar_bilgi(self):
+        try:
+            with open(self.get_path("Metin", "Kapilar"), "r", encoding="utf-8") as f:
+                bilgi = f.read()
+            messagebox.showinfo(title="Kapılar Hakkında Bilgiler", message=bilgi)
+        except Exception as e:
+            messagebox.showerror("Hata", f"Kapılar dosyası bulunamadı: {e}")
 
-                son_kapi = Button(sorukapisi)
-                son_kapi.config(text="Diğer Kat", bg="black", fg="white", command=ikinci_kat)
-                son_kapi.place(relx=0.5, rely=0.9, anchor=CENTER)
+    def baslat_hikaye(self):
+        self.hikaye_sayac = 0
+        self.story_window = Toplevel(self.root)
+        self.story_window.title("Hikaye")
+        self.story_window.resizable(width=False, height=False)
+        self.story_window.geometry("800x400")
 
+        if hasattr(self, 'story_resim1'):
+            Label(self.story_window, image=self.story_resim1, bg="black").pack()
 
-
-
-
-def dogru ():
-        #İlk Veriler
-        global dogru_sayac
-        dogru_sayac += 1
-        global dogru_secim
-        sorukapisi.destroy()
-        #Dogru Launch
-        dogru_secim = Toplevel(Launcher)
-        dogru_secim.geometry("400x250")
-        dogru_secim.title("Doğru Bildin")   
-        dogru_secim.resizable(width=False, height=False)
-        #Background
-        Background = Label(dogru_secim, 
-                image=dogru_bilgiresim,
-                justify=CENTER, 
-                height=500, 
-                fg="blue")
-        Background.pack()       
-        dogru_label = Label(dogru_secim ,
-                        font=("Minecraft"),
-                        )
-        Kapı_button=Button(dogru_secim)
-        #Dogru yazı sorgusu
-        if dogru_sayac == 1:
-                dogru_label.config(text="Bu kolaydı"+ ("\n")+ isim_giris.get())
-        if dogru_sayac == 2:
-                dogru_label.config(text="Nasıl bildin bunu seni sefil")
-        if dogru_sayac == 3:
-                dogru_label.config(text="Tahmin ettiğimden iyi bir savaşçısın" + ("\n")+ isim_giris.get())
-        dogru_label.place(relx=0.5, rely=0.2, anchor=CENTER)
-        Kapı_button.config(text="Devam Et",bg="black",fg="white", command=ilk_kat)
-        Kapı_button.place(relx=0.5, rely=0.9, anchor=CENTER)   
-
-
-def yanlis():
-        play()
-        #İlk Veriler
-        global yanlis_secim
-        global health
-        health -= 1  
-        sorukapisi.destroy()
-        #Dogru Launch
-        yanlis_secim = Toplevel(Launcher)
-        yanlis_secim.geometry("400x250")
-        yanlis_secim.title("Yanlış Bilgi")   
-        yanlis_secim.resizable(width=False, height=False)
-        #Background
-        Background = Label(yanlis_secim, 
-                image=yanlis_bilgiresim,
-                justify=CENTER, 
-                height=500, 
-                fg="blue")
-        Background.pack()       
-        Kapı_button=Button(yanlis_secim)
-        #Yanliş yazı sorgusu
-        Kapı_button.config(text="Devam Et",bg="black",fg="white", command=ilk_kat)
-        Kapı_button.place(relx=0.5, rely=0.9, anchor=CENTER)   
-
+        self.story_label = Label(self.story_window, fg="white", bg="black", width=85, height=15, font=("Arial", 10))
+        self.story_label.place(relx=0.5, rely=0.2, anchor=CENTER)
         
+        self.story_button = Button(self.story_window, text="Oku", bg="black", fg="white", width=12, command=self.hikaye_ilerlet)
+        self.story_button.place(x=600, y=300)
+        
+        # İlk hikaye satırını yükle
+        try:
+            with open(self.get_path("Metin", "Hikaye"), "r", encoding="utf-8") as f:
+                self.hikaye_satirlari = [line.strip() for line in f.readlines() if line.strip()]
+        except Exception as e:
+            self.hikaye_satirlari = ["Hikaye dosyası bulunamadı..."]
+            
+        self.hikaye_ilerlet()
 
-def kapilar():
-        #Kapı Bilgisi
-        hikaye_dosya = open("Metin\\Kapilar", "r+", encoding="utf-8")
-        hikaye = hikaye_dosya.read()    
-        hikaye_dosya.close()
-        messagebox.showinfo(title="Kapılar Hakkında Bilgiler", message=hikaye)
-def sorgu():
-
-        #İsim giriş Sorgusu
-        global sorgu_button1
-        if (isim_giris.get() == ""):
-                isim_girin.config(
-                        text="Boş bırakmayın",
-                        fg="white", 
-                        bg="black", 
-                        font=("minecraft", 12))      
-                sorgu_button1=Button(Launcher)
-                sorgu_button1.config(text="Boş girme",bg="black",fg="white", width=12, command=sorgu)
-                sorgu_button1.place(relx=0.5, rely=0.8, anchor=CENTER)
-                messagebox.showinfo("Boş", "Lütfen İsim girin")
-
-                if messagebox != "":
-                        sorgu_button1.config(text="Başla",bg="black",fg="white", width=12, command=sorgu)
-                        sorgu_button1.destroy()
-
+    def hikaye_ilerlet(self):
+        if self.hikaye_sayac < len(self.hikaye_satirlari):
+            self.story_label.config(text=self.hikaye_satirlari[self.hikaye_sayac])
+            self.hikaye_sayac += 1
+            if self.hikaye_sayac == len(self.hikaye_satirlari):
+                self.story_button.config(text="Oyuna Başla", command=self.baslat_boss_konusma)
         else:
-                sorgu_button1.destroy()
-                story()
-       
+            self.baslat_boss_konusma()
+
+    def baslat_boss_konusma(self):
+        self.story_window.destroy()
+        self.konusma_sayac = 0
+        
+        self.boss_window = Toplevel(self.root)
+        self.boss_window.title("Konuşma")
+        self.boss_window.resizable(width=False, height=False)
+        self.boss_window.geometry("800x400")
+
+        self.konusma_gif_label = Label(self.boss_window, bg="black")
+        self.konusma_gif_label.pack()
+        
+        # Animasyon başlat
+        if hasattr(self, 'bossgif_image'):
+            self.boss_anim_index = 0
+            self.update_boss_anim()
+
+        self.konusma_label = Label(self.boss_window, text="Sen kimsin?", fg="white", bg="black", width=65, height=5, font=("Arial", 10))
+        self.konusma_label.place(relx=0.5, rely=0.8, anchor=CENTER)   
+
+        self.boss_button = Button(self.boss_window, text="Konuş", bg="black", fg="white", width=12, command=self.konusma_ilerlet)
+        self.boss_button.place(relx=0.9, rely=0.9, anchor=CENTER)   
+
+    def update_boss_anim(self):
+        if not self.boss_window.winfo_exists(): return
+        frame = self.bossgif_image[self.boss_anim_index]
+        self.boss_anim_index = (self.boss_anim_index + 1) % self.frameCnt
+        self.konusma_gif_label.configure(image=frame)
+        self.boss_window.after(100, self.update_boss_anim)
+
+    def konusma_ilerlet(self):
+        self.konusma_sayac += 1
+        diyaloglar = [
+            "Seni tanımıyorum.",
+            f"Demek adın {self.oyuncu_ismi}",
+            "Sen bana uygun bir rakip değilsin.",
+            "Şimdi yıkıl karşımdan!"
+        ]
+        
+        if self.konusma_sayac <= len(diyaloglar):
+            self.konusma_label.config(text=diyaloglar[self.konusma_sayac - 1])
+            if self.konusma_sayac == len(diyaloglar):
+                self.boss_button.config(text="Kabul Et (1. Kat)", command=self.baslat_kat_bir)
+
+    def baslat_kat_bir(self):
+        if hasattr(self, 'boss_window') and self.boss_window.winfo_exists():
+            self.boss_window.destroy()
+            
+        self.kat_bir_window = Toplevel(self.root)
+        self.kat_bir_window.title("Birinci Kat")
+        self.kat_bir_window.geometry("800x600")
+        self.kat_bir_window.resizable(width=False, height=False)
+
+        if hasattr(self, 'katbir_resim1'):
+            Label(self.kat_bir_window, image=self.katbir_resim1, bg="black").pack()
+
+        Label(self.kat_bir_window, text=f"Hoş geldin savaşçı {self.oyuncu_ismi}", bg="black", fg="white", font=("Arial", 14, "bold")).place(relx=0.5, rely=0.1, anchor=CENTER)
+
+        kapi_img = self.katbir_kapiresim1 if hasattr(self, 'katbir_kapiresim1') else None
+        
+        btn_kapi1 = Button(self.kat_bir_window, text="Kapı 1", bg="black", fg="white", image=kapi_img, compound=TOP, command=self.soru_goster)
+        btn_kapi1.place(relx=0.2, rely=0.5, anchor=CENTER)
+
+        btn_kapi2 = Button(self.kat_bir_window, text="Kapı 2", bg="black", fg="white", image=kapi_img, compound=TOP, command=self.soru_goster)
+        btn_kapi2.place(relx=0.8, rely=0.5, anchor=CENTER)
+
+    def soru_goster(self):
+        self.kat_bir_window.destroy()
+        self.oyun_sayac += 1
+        
+        self.soru_window = Toplevel(self.root)
+        self.soru_window.title(f"Soru {self.oyun_sayac}")
+        self.soru_window.geometry("800x600")
+        self.soru_window.resizable(width=False, height=False)
+
+        if hasattr(self, 'katbir_resim1'):
+            Label(self.soru_window, image=self.katbir_resim1, bg="black").pack()
+
+        if self.oyun_sayac <= self.oyun_sayisi:
+            # Rastgele bir soru çek
+            self.secilen_soru = random.choice(self.soru_havuzu)
+            
+            Label(self.soru_window, text=self.secilen_soru["soru"], bg="black", fg="white", font=("Arial", 14)).place(relx=0.5, rely=0.2, anchor=CENTER)
+            
+            # Şıkları yerleştir
+            x_pos = 150
+            for i, sik in enumerate(self.secilen_soru["siklar"]):
+                Button(self.soru_window, text=sik, bg="gray", fg="white", width=15, height=2, 
+                       command=lambda idx=i: self.cevap_kontrol(idx)).place(x=x_pos, y=400)
+                x_pos += 150
+        else:
+            Label(self.soru_window, text=f"Bitti sanıyorsan yanılıyorsun,\n{self.oyuncu_ismi}!", bg="black", fg="white", font=("Arial", 16, "bold")).place(relx=0.5, rely=0.3, anchor=CENTER)
+            Button(self.soru_window, text="Diğer Kata Geç", bg="darkred", fg="white", font=("Arial", 12), command=self.baslat_kat_iki).place(relx=0.5, rely=0.8, anchor=CENTER)
+
+    def cevap_kontrol(self, secilen_index):
+        # Ses çalma örneği
+        try:
+            pygame.mixer.music.load(self.get_path("music", "basari.mp3"))
+            pygame.mixer.music.play()
+        except Exception:
+            pass
+
+        self.soru_window.destroy()
+        
+        is_correct = (secilen_index == self.secilen_soru["cevap"])
+        
+        self.sonuc_window = Toplevel(self.root)
+        self.sonuc_window.geometry("400x250")
+        self.sonuc_window.resizable(width=False, height=False)
+        
+        if is_correct:
+            self.dogru_sayac += 1
+            self.sonuc_window.title("Doğru Bildin")
+            img = self.dogru_bilgiresim if hasattr(self, 'dogru_bilgiresim') else None
+            mesajlar = [
+                f"Bu kolaydı\n{self.oyuncu_ismi}",
+                "Nasıl bildin bunu seni sefil?",
+                f"Tahmin ettiğimden iyi bir savaşçısın\n{self.oyuncu_ismi}"
+            ]
+            mssg = mesajlar[min(self.dogru_sayac - 1, len(mesajlar) - 1)]
+        else:
+            self.health -= 1
+            self.sonuc_window.title("Yanlış Bildin")
+            img = self.yanlis_bilgiresim if hasattr(self, 'yanlis_bilgiresim') else None
+            mssg = f"Yanlış! Canın azaldı. Kalan Can: {self.health}"
+
+        if img:
+            Label(self.sonuc_window, image=img).pack()
+            
+        Label(self.sonuc_window, text=mssg, bg="black", fg="white", font=("Arial", 12, "bold")).place(relx=0.5, rely=0.2, anchor=CENTER)
+        
+        # Eğer canımız 0 olursa oyunu kaybettik senaryosu eklenebilir.
+        if self.health <= 0:
+            Button(self.sonuc_window, text="Kaybettin (Çıkış)", bg="darkred", fg="white", command=self.root.quit).place(relx=0.5, rely=0.8, anchor=CENTER)
+        else:
+            Button(self.sonuc_window, text="Devam Et", bg="black", fg="white", command=self.baslat_kat_bir_from_sonuc).place(relx=0.5, rely=0.8, anchor=CENTER)
+
+    def baslat_kat_bir_from_sonuc(self):
+        self.sonuc_window.destroy()
+        self.baslat_kat_bir()
+
+    def baslat_kat_iki(self):
+        self.soru_window.destroy()
+        self.kat_iki_window = Toplevel(self.root)
+        self.kat_iki_window.title("İkinci Kat")
+        self.kat_iki_window.geometry("800x600")
+        self.kat_iki_window.resizable(width=False, height=False)
+
+        if hasattr(self, 'katiki_resim1'):
+            Label(self.kat_iki_window, image=self.katiki_resim1, bg="black").pack()
+
+        Label(self.kat_iki_window, text="Devam Edecektir...", bg="black", fg="white", font=("Arial", 20, "bold")).place(relx=0.5, rely=0.5, anchor=CENTER)
+        Button(self.kat_iki_window, text="Çıkış", bg="darkred", fg="white", font=("Arial", 12), command=self.root.quit).place(relx=0.5, rely=0.8, anchor=CENTER)
 
 
-def play():
-        pygame.mixer.music.load("music\\basari.mp3")
-        pygame.mixer.music.play(loops=musicdongu)
-
-
-#Launcher
-Launcher = Tk()
-Launcher.geometry("300x200")
-Launcher.title("Launcher")
-Launcher.resizable(width=False, height=False)
-
-
-#İmage
-launcher_image1 = ImageTk.PhotoImage(Image.open('texture\\launcher.jpg'))
-
-story_resim1 = ImageTk.PhotoImage(Image.open('texture\\doga.jpg'))
-
-katbir_resim1 = ImageTk.PhotoImage(Image.open('texture\\magara.jpg'))
-
-katbir_kapiresim1= ImageTk.PhotoImage(Image.open('texture\\kapi1.png'))
-
-dogru_bilgiresim= ImageTk.PhotoImage(Image.open('texture\\dogrubilgi.jpg'))
-
-yanlis_bilgiresim= ImageTk.PhotoImage(Image.open('texture\\yanlisbilgi.png'))
-
-katiki_resim1= ImageTk.PhotoImage(Image.open('texture\\agac.png'))
-
-bossgif_image = [PhotoImage(file='texture\\boss.gif',format='gif -index %i' % (i)) for i in range(frameCnt)]
-
-
-
-
-Background = Label(Launcher, 
-                image=launcher_image1,
-                justify=CENTER, 
-                height=500, 
-                fg="blue")
-Background.pack()
-#Label 
-Launcher_Label = Label(Launcher ,  
-                text="Hoş geldin savaşçı",
-                font=("Minecraft"),
-                )
-Launcher_Label.place(relx=0.5, rely=0.1, anchor=CENTER)
-
-isim_girin = Label(Launcher,
-        text="İsim Giriniz",
-        fg="white", 
-        bg="black", 
-        font=("minecraft", 12))         
-isim_girin.place(relx=0.5, rely=0.3, anchor=CENTER)
-
-isim_giris = Entry(Launcher)
-isim_giris.config()
-isim_giris.place(relx=0.5, rely=0.5, anchor=CENTER)
-
-#Button  
-giris_button=Button(Launcher)
-giris_button.config(text="Başla",bg="black",fg="white", command=sorgu )
-giris_button.place(relx=0.5, rely=0.8, anchor=CENTER)
-
-Kapı_button=Button(Launcher)
-Kapı_button.config(text="Kapı Bilgisi",bg="black",fg="white", command=kapilar)
-Kapı_button.place(relx=0.2, rely=0.8, anchor=CENTER)
-sorgu_button1=Label()
-dogru_secim=Label()
-yanlis_secim=Label()
-mainloop()
-
-
-
-
-
+if __name__ == "__main__":
+    root = Tk()
+    app = GameApp(root)
+    root.mainloop()
